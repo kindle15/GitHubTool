@@ -1,7 +1,7 @@
-# GithubTool v2.0.0 - Developer Documentation
+# GithubTool v2.0.2 - Developer Documentation
 
-**Version:** 2.0.0  
-**Release Date:** February 2026  
+**Version:** 2.0.2  
+**Release Date:** March 2026  
 **Author:** kindle15  
 **License:** (c) kindle15 / 2026
 
@@ -60,8 +60,8 @@ Code
 
 | Module | Purpose | Dependencies |
 |--------|---------|-------------|
-| `gui_3.py` | Main application, UI, orchestration | tkinter, auth_token, download_core, csv_core |
-| `auth_token.py` | Token detection (flash drive, env, file) | os, pathlib |
+| `gui.py` | Main application, UI, orchestration | tkinter, auth_token, download_core, csv_core |
+| `auth_token.py` | Token detection (USB drives D:-Z:, env vars) | os, ctypes |
 | `download_core.py` | Fetch repos from GitHub API | urllib, json |
 | `csv_core.py` | Export repositories to CSV/TXT | csv, textwrap |
 
@@ -93,30 +93,42 @@ git clone https://github.com/kindle15/githubtool.git
 cd githubtool
 2. Verify Dependencies
 bash
-python3 --version  # Should be 3.7+
+python --version   # Should be 3.7+
 git --version      # Should be 2.0+
-python3 -m tkinter # Should open a test window
+python -m tkinter  # Should open a test window
 3. Configure Token (Optional)
-Option A: Flash Drive
+Option A: USB / Removable Drive (Recommended, Windows)
 
-bash
-# Create token file on flash drive
-echo "ghp_your_token_here" > /path/to/flashdrive/.github_token
+Create a file named PersonalAccessToken.txt on any drive D: through Z:.
+Paste your GitHub token as the only content (no extra spaces or newlines).
+GithubTool scans drives D:–Z: automatically on startup.
+
+Example:
+  D:\PersonalAccessToken.txt
+  E:\PersonalAccessToken.txt
+
+> Note: The filename must be exactly "PersonalAccessToken.txt". Do NOT use
+> ".github_token" or any other name — those will not be detected.
+
 Option B: Environment Variable
 
-bash
-export GITHUB_TOKEN="ghp_your_token_here"
-Option C: Home Directory
+Windows (Command Prompt):
+  set GITHUB_TOKEN=ghp_your_token_here
 
-bash
-echo "ghp_your_token_here" > ~/.github_token
-chmod 600 ~/.github_token
+Windows (System Properties → Environment Variables):
+  Variable name:  GITHUB_TOKEN
+  Variable value: ghp_your_token_here
+
+Linux/macOS:
+  export GITHUB_TOKEN="ghp_your_token_here"
+
+There is NO home-directory file option — remove all mentions of ~/.github_token.
 4. Run Application
 bash
-python3 gui_3.py
+python gui.py
 📚 Module Documentation
 ConfigManager Class
-File: gui_3.py
+File: gui.py
 Purpose: Manages application configuration persistence
 
 Methods
@@ -159,7 +171,7 @@ Example:
 Python
 cfg.set("default_public_user", "octocat")
 ExportManager Class
-File: gui_3.py
+File: gui.py
 Purpose: Export repository data to CSV/TXT formats
 
 Static Methods
@@ -207,7 +219,7 @@ Example:
 Python
 ExportManager.export_to_txt(repos, "my_repos.txt")
 RepoTable Widget
-File: gui_3.py
+File: gui.py
 Purpose: Treeview-based table for displaying repository lists
 
 Methods
@@ -257,7 +269,7 @@ Example:
 Python
 table.clear()
 RateLimitWidget Class
-File: gui_3.py
+File: gui.py
 Purpose: Display GitHub API rate limit information
 
 Added in: Drop 3 (v1.3.0)
@@ -286,12 +298,14 @@ Example:
 Python
 rate_widget.refresh()
 CreationLabTab Class
-File: gui_3.py
+File: gui.py
 Purpose: Create local repos with templates and publish to GitHub
 
 Added in: Drop 3.6 (v1.6.0)
 Enhanced in: Drop 3.7 (space-efficient layout)
 Enhanced in: Drop 3.8 / v2.0.0 (safety checks)
+Enhanced in: v2.0.1 (Push to Branch, Publish Existing Folder, Delete repo)
+Enhanced in: v2.0.2 (Tabbed action panel, Token button, Stats button, Toggle Privacy, Fork, Rename)
 
 Key Features
 README Templates
@@ -543,7 +557,63 @@ Auto-Saved: Updated on window close
 
 ## 📜 Drop History
 
-### Version 2.0.0 - Major Release (Current)
+### Version 2.0.2 - Smart Actions Update (Current)
+
+**Release Date:** March 2026  
+**Codename:** "Console-First"
+
+#### Major Features
+- 🗂️ **Tabbed Action Panel:** ⭐ Actions / 🔧 Manage / ⚠️ Danger tabs in the right panel
+- 🔑 **Token Button:** Opens GitHub token creation page, or shows token info in console
+- 📊 **Stats Button:** Dumps tab statistics to the diagnostics console (no popups)
+- 🔒 **Toggle Privacy:** Switch repos between Public ↔ Private from the GUI
+- 🔀 **Fork Repo:** Fork any repository to your account
+- ✏️ **Rename Repo:** Rename a repository on GitHub
+- 📟 **Console-First Design:** All action results go to the diagnostics console
+
+#### Changes
+- Replaced single Actions section in right panel with tabbed notebook (⭐/🔧/⚠️)
+- Added `_btn_token()` method — checks/opens GitHub token page
+- Added `_btn_stats()` method — dumps repository statistics to console
+- Added `_toggle_privacy_async()` and `_do_toggle_privacy()` methods
+- Added `_fork_repo_async()` and `_do_fork_repo()` methods
+- Added `_rename_repo_async()` and `_do_rename_repo()` methods
+- Updated `APP_TITLE` to `"GithubTool v2.0.2"`
+- Updated version label in Creation Lab branding to v2.0.2
+- Updated all `User-Agent` headers to `GithubTool/2.0.2`
+
+#### Bug Fixes
+- None (new features only)
+
+---
+
+### Version 2.0.1 - Push to Branch
+
+**Release Date:** March 2026  
+**Codename:** "Branch Out"
+
+#### Major Features
+- ⬆️ **Push to Branch:** Push a local git repo to a branch of an existing GitHub repo
+- 🚀 **Publish Existing Folder:** Full init→create→push workflow for any local folder
+- 🗑️ **Delete Repository:** Delete a GitHub repo from the GUI (with safety confirmation)
+- 📦 **Download ZIP Fix:** Corrected ZIP download for external repos (Tab 4)
+
+#### Changes
+- Added `_push_to_branch_async()` and `_do_push_to_branch()` to `CreationLabTab`
+- Added `_publish_existing_folder_async()` and `_do_publish_existing_folder()` to `CreationLabTab`
+- Added `_delete_github_repo()` helper for rollback and Danger tab
+- Added Push to Branch UI section in Tab 5 (folder, repo, branch, message fields)
+- Added "🚀 Publish Folder" and "⬆️ Push to Branch" buttons to Creation Lab
+- Updated Creation Lab branding to v2.0.1
+- Added copyright notice in Tab 5 footer
+
+#### Bug Fixes
+- Fixed ZIP download in `ExternalDownloadTab.download_source()`
+- Fixed rollback on failed publish (delete GitHub repo if push fails)
+
+---
+
+### Version 2.0.0 - Major Release
 
 **Release Date:** February 2026  
 **Codename:** "Safety First"
@@ -856,7 +926,7 @@ def my_function(param1: str, param2: int) -> bool:
 Git Workflow
 Branch Strategy
 Code
-main (v2.0.0)
+main (v2.0.2)
   │
   ├── develop (active development)
   │     │
@@ -982,7 +1052,7 @@ Code
 Scenario 2: Authenticated User
 
 Code
-1. Set up token (flash drive, env, or file)
+1. Set up token (PersonalAccessToken.txt on D:-Z: drive, or GITHUB_TOKEN env var)
 2. Launch application
 3. Expected: Tab 1 shows "My Repos"
 4. Verify: Private repos visible
@@ -1081,7 +1151,7 @@ Python
 """
 module_name.py - Brief description
 
-Version: 2.0.0
+Version: 2.0.2
 Author: kindle15
 License: (c) kindle15 / 2026
 
@@ -1176,23 +1246,21 @@ Tab 1 shows "Public Browse: kindle15"
 Star button disabled
 Causes:
 
-Token file not found
-Token file has wrong permissions
+PersonalAccessToken.txt not found on any D:–Z: drive
 Environment variable not set
-Flash drive not mounted
+Drive not connected (or not a D:–Z: letter)
 Solutions:
 
-Check token file:
+Check USB/drive token file (Windows):
 
-bash
-# Check if file exists
-ls -la ~/.github_token
+bat
+:: Verify file exists on the drive (replace D: with your drive letter)
+dir D:\PersonalAccessToken.txt
 
-# Check permissions (should be 600)
-chmod 600 ~/.github_token
-
-# Verify contents (should start with ghp_)
-cat ~/.github_token
+:: Verify contents (should start with ghp_)
+type D:\PersonalAccessToken.txt
+Important: The file must be named exactly "PersonalAccessToken.txt" at the
+root of the drive, not in any subfolder, and not named ".github_token".
 Check environment variable:
 
 bash
@@ -1205,13 +1273,10 @@ Check flash drive:
 
 bash
 # Linux
-mount | grep /media
-
-# macOS
-ls -la /Volumes/
-
-# Windows
-dir D:\ (or appropriate drive letter)
+bat
+:: Windows - check drive letter
+dir D:\
+:: Look for PersonalAccessToken.txt in the listing
 Verify token is valid:
 
 bash
@@ -1442,10 +1507,9 @@ def get_token() -> Tuple[Optional[str], str]:
     Detect GitHub token from multiple sources.
     
     Priority order:
-    1. Flash drive
-    2. Environment variable
-    3. Home directory file
-    4. CUSTOM: Add your source here
+    1. USB / fixed drives D:–Z: (PersonalAccessToken.txt)
+    2. Environment variable (GITHUB_TOKEN or GH_TOKEN)
+    3. CUSTOM: Add your source here
     """
     
     # Existing sources...
@@ -1458,11 +1522,10 @@ def get_token() -> Tuple[Optional[str], str]:
     return None, "not found"
 
 def _check_cloud_storage() -> Optional[str]:
-    """Check cloud storage for token file."""
+    """Check cloud storage for token file (custom extension example)."""
     cloud_paths = [
-        "~/Dropbox/.github_token",
-        "~/Google Drive/.github_token",
-        "~/OneDrive/.github_token"
+        "~/Dropbox/PersonalAccessToken.txt",
+        "~/OneDrive/PersonalAccessToken.txt",
     ]
     
     for path in cloud_paths:
@@ -1877,7 +1940,7 @@ Python
 import unittest
 import tempfile
 import os
-from gui_3 import ExportManager
+from gui import ExportManager
 
 class TestExportManager(unittest.TestCase):
     
@@ -2146,7 +2209,7 @@ Q: Can I use this with GitHub Enterprise?
 A: Yes! Modify the API base URL:
 
 Python
-# At top of gui_3.py, add constant:
+# At top of gui.py, add constant:
 GITHUB_API_BASE = os.getenv("GITHUB_API_URL", "https://api.github.com")
 
 # Then in all API calls, use:
@@ -2177,7 +2240,7 @@ pip install pyinstaller
 pyinstaller --onefile --windowed \
     --name GithubTool \
     --icon=icon.ico \
-    gui_3.py
+    gui.py
 Distribute:
 
 Windows: dist/GithubTool.exe
@@ -2189,7 +2252,7 @@ A:
 
 bash
 git fetch origin
-git checkout v2.0.0  # or latest tag
+git checkout v2.0.2  # or latest tag
 # or
 git pull origin main
 Your config file (ght_config.json) is preserved.
@@ -2266,7 +2329,7 @@ However:
 ✅ Set expiration dates
 ✅ Revoke if compromised
 📄 License
-GithubTool v2.0.0
+GithubTool v2.0.2
 
 (c) kindle15 / 2026
 
@@ -2295,7 +2358,7 @@ Author: kindle15
 
 Project: GithubTool
 
-Version: 2.0.0
+Version: 2.0.2
 
 Website: https://github.com/kindle15/githubtool
 
@@ -2305,6 +2368,8 @@ Email: (contact via GitHub)
 
 📝 Changelog Summary
 Version	Date	Key Features
+v2.0.2	Mar 2026	Tabbed action panel, Token/Stats buttons, Toggle Privacy, Fork, Rename
+v2.0.1	Mar 2026	Push to Branch, Publish Existing Folder, Delete repo, ZIP fix
 v2.0.0	Feb 2026	Safety checks, prevent overwrites
 v1.7.0	Feb 2026	Space-efficient layout
 v1.6.0	Feb 2026	Creation Lab with templates
@@ -2357,5 +2422,5 @@ Community Requests:
 END OF DEVELOPER.MD
 
 This documentation is maintained as part of the GithubTool project.
-Last updated: February 2026
-Version: 2.0.0
+Last updated: March 2026
+Version: 2.0.2
