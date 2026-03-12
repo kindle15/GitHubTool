@@ -7,6 +7,94 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.2] - 2026-03-12
+
+### 🎉 Release - "Console-First / Smart Actions"
+
+This version overhauls the right panel with a tabbed layout and introduces
+new repo management actions that all output to the diagnostics console rather
+than spawning popup dialogs.
+
+### Added
+
+#### Tabbed Action Panel
+- **⭐ Actions tab** - Open in Browser, Clone, Download ZIP, Star/Unstar
+- **🔧 Manage tab** - Toggle Privacy, Fork Repo, Rename Repo
+- **⚠️ Danger tab** - Delete Repository
+- All three tabs share the same right-panel space (icon-only tab strip)
+
+#### Toolbar Buttons
+- **🔑 Token button** - Opens GitHub token creation page when no token present;
+  shows masked token info in console when token is already set
+- **📊 Stats button** - Dumps per-tab repository statistics to the diagnostics
+  console: repo counts, privacy breakdown, stars/forks totals, top languages,
+  largest repo — no popup dialogs
+
+#### Manage Actions
+- **Toggle Privacy** (`_toggle_privacy_async`) - Switch a repo Public ↔ Private
+- **Fork Repo** (`_fork_repo_async`) - Fork a selected repo to your account
+- **Rename Repo** (`_rename_repo_async`) - Rename a repo on GitHub
+
+#### Console-First Design
+- All action results (fork, rename, toggle privacy) written to diagnostics console
+- Confirmations via dialog; results via console only
+
+### Changed
+- Right panel "⭐ Actions" section replaced with tabbed notebook (⭐/🔧/⚠️)
+- `APP_TITLE` updated to `"GithubTool v2.0.2"`
+- Creation Lab branding label updated to `v2.0.2`
+- All `User-Agent` headers updated to `GithubTool/2.0.2`
+
+### Fixed
+- None (new features only)
+
+### Security
+- None
+
+---
+
+## [2.0.1] - 2026-03-10
+
+### 🎉 Release - "Branch Out"
+
+This version adds the Push to Branch workflow, a Publish Existing Folder
+shortcut, repository deletion, and fixes the ZIP download.
+
+### Added
+
+#### Push to Branch
+- **`_push_to_branch_async()` / `_do_push_to_branch()`** - Push an existing
+  local git repo to a named branch on an existing GitHub remote
+- **Push to Branch UI section** in Tab 5 (Creation Lab): folder picker, repo
+  owner/name fields, branch name field, commit message field
+- **🔍 Check Status button** - Checks git status before pushing
+- **⬆️ Push to Branch button** - Executes the push
+
+#### Publish Existing Folder
+- **`_publish_existing_folder_async()` / `_do_publish_existing_folder()`** -
+  Full workflow: git init → create GitHub repo → configure remote → commit all
+  files → push
+- **🚀 Publish Folder button** in Creation Lab
+- **Rollback on failure** - Deletes the newly created GitHub repo if push fails
+- **Repo exists handling** - Offers to push to existing repo if name is taken
+
+#### Danger Tab / Delete Repo
+- **`_delete_github_repo()`** helper - Delete a GitHub repo via API
+- **Delete confirmation dialog** - Requires typing the repo name to confirm
+
+### Changed
+- Creation Lab branding label updated to `v2.0.1`
+- Added copyright notice in Tab 5 footer
+
+### Fixed
+- **Download ZIP** - Fixed ZIP download in `ExternalDownloadTab.download_source()`
+  (`User-Agent` updated to `GithubTool/2.0.1`)
+
+### Security
+- Rollback prevents orphaned GitHub repos on push failure
+
+---
+
 ## [2.0.0] - 2026-02-16
 
 ### 🎉 Major Release - "Safety First"
@@ -393,6 +481,8 @@ This major version introduces comprehensive safety checks to prevent accidental 
 - Drops were consolidated into version numbers for release
 
 **Mapping:**
+- v2.0.2 → Tabbed action panel, Token/Stats buttons, Toggle Privacy, Fork, Rename
+- v2.0.1 → Push to Branch, Publish Existing Folder, Delete repo, ZIP fix
 - Drop 3.8 → v2.0.0 (Safety checks = major feature)
 - Drop 3.7 → v1.7.0 (Space-efficient layout)
 - Drop 3.6 → v1.6.0 (Creation Lab)
@@ -407,6 +497,28 @@ This major version introduces comprehensive safety checks to prevent accidental 
 ---
 
 ## Upgrade Guide
+
+### From v2.0.x to v2.0.2
+
+**Breaking Changes:** None
+
+**New Features:**
+- Tabbed right panel (⭐ Actions / 🔧 Manage / ⚠️ Danger) replaces old single section
+- Token button in toolbar
+- Stats button in toolbar
+- Toggle Privacy, Fork, Rename actions in Manage tab
+- Push to Branch and Publish Existing Folder in Tab 5 (added in v2.0.1)
+
+**Action Required:** None — update `gui.py` and run
+
+**Config Migration:** Automatic (no new keys)
+
+**Token Setup:** If you were following old docs that said to save `.github_token`
+or `~/.github_token`, those files will NOT be detected. Create
+`PersonalAccessToken.txt` on any drive D:–Z: instead, or set the `GITHUB_TOKEN`
+environment variable.
+
+---
 
 ### From v1.x to v2.0.0
 
@@ -470,6 +582,12 @@ This major version introduces comprehensive safety checks to prevent accidental 
 
 ## Known Issues
 
+### v2.0.2
+- None reported
+
+### v2.0.1
+- None reported
+
 ### v2.0.0
 - None reported
 
@@ -513,6 +631,12 @@ See [DEVELOPER.md](DEVELOPER.md) for complete roadmap.
 
 ## Deprecation Notices
 
+### v2.0.2
+- None
+
+### v2.0.1
+- None
+
 ### v2.0.0
 - None
 
@@ -522,6 +646,12 @@ See [DEVELOPER.md](DEVELOPER.md) for complete roadmap.
 ---
 
 ## Security Updates
+
+### v2.0.2
+- **Rollback on push failure** - GitHub repo is deleted if push fails after creation
+
+### v2.0.1
+- **Delete confirmation** - Requires typing repo name to confirm deletion
 
 ### v2.0.0
 - **Enhanced Safety** - Prevents accidental repository overwrites
@@ -538,6 +668,12 @@ See [DEVELOPER.md](DEVELOPER.md) for complete roadmap.
 ---
 
 ## Contributors
+
+**v2.0.2:**
+- kindle15 - Tabbed action panel, Token/Stats buttons, Toggle Privacy, Fork, Rename, console-first design
+
+**v2.0.1:**
+- kindle15 - Push to Branch, Publish Existing Folder, Delete repo, ZIP fix
 
 **v2.0.0:**
 - kindle15 - Safety checks, copyright, documentation
@@ -595,6 +731,6 @@ See [LICENSE](LICENSE) for details.
 
 ---
 
-**Last Updated:** 2026-02-16  
-**Current Version:** 2.0.0  
+**Last Updated:** 2026-03-12  
+**Current Version:** 2.0.2  
 **Status:** Stable Release
