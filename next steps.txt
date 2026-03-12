@@ -1,0 +1,7 @@
+Test the application
+Create git tag: git tag -a v2.0.0 -m "Release v2.0.0 - Safety First"
+Push to GitHub: git push origin v2.0.0
+Create GitHub Release with:
+Tag: v2.0.0
+Title: "GithubTool v2.0.0 - Safety First 🛡️"
+Description: Copy from CHANGELOG.md

@@ -1,0 +1,600 @@
+# Changelog
+
+All notable changes to GithubTool will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [2.0.0] - 2026-02-16
+
+### 🎉 Major Release - "Safety First"
+
+This major version introduces comprehensive safety checks to prevent accidental data loss when publishing repositories to GitHub.
+
+### Added
+
+#### Safety Features
+- **Pre-Publish Repository Checks** - Verifies if repository already exists on GitHub before attempting to create it
+- **`check_if_repo_exists()` function** - New API function to check repository existence
+- **`get_authenticated_user()` function** - Retrieves username of authenticated user
+- **Safety Warning Dialog** - Shows detailed repository information when attempting to publish to existing repo:
+  - Repository full name
+  - Last updated date
+  - Last pushed date
+  - Size in KB
+  - Default branch name
+  - GitHub URL
+- **Safe Action Options** in warning dialog:
+  - **Cancel (Safest)** - Abort publishing operation
+  - **Add as Remote Only** - Link to existing repo without creating new one
+  - **View on GitHub** - Open existing repo in browser for inspection
+
+#### Copyright & Documentation
+- **Copyright Notice** - Added `(c) kindle15 / 2026` to About dialog
+- **Copyright in File Header** - Added to all source files
+- **Enhanced Welcome Tab** - Updated with safety features documentation
+- **Safety Check Documentation** - Added to DEVELOPER.md and README.md
+
+#### Diagnostics & Logging
+- **Safety Check Logging** - Detailed diagnostics messages for:
+  - Repository existence checks
+  - User authentication
+  - Warning dialog interactions
+  - Safe action selections
+- **Enhanced Startup Messages** - Clear indication that safety checks are enabled
+
+### Changed
+
+#### Publishing Workflow
+- **`publish_to_github()` method** - Now includes pre-publish safety checks
+- **Creation Lab Publishing** - Enhanced with existence verification before creating repo
+- **Error Handling** - Improved error messages for repository conflicts
+
+#### User Experience
+- **Warning Dialogs** - More informative with actionable options
+- **Button States** - Publish button only enabled after local repo creation
+- **Diagnostics Messages** - Clearer indicators for safety check results
+
+### Fixed
+- None (new features only, no bug fixes)
+
+### Security
+- **Prevents Data Loss** - No longer possible to accidentally overwrite existing repositories
+- **User Confirmation** - Explicit user choice required when repo name conflicts detected
+- **Safe Defaults** - Cancel option is most prominent in warning dialogs
+
+---
+
+## [1.7.0] - 2026-02-15 (Drop 3.7)
+
+### Added
+- **Space-Efficient Layout** - Steps 2 & 3 now side-by-side in Creation Lab
+  - Reduces vertical space usage by ~30%
+  - Improves diagnostics console visibility
+  - README and LICENSE sections share horizontal space
+
+### Changed
+- **Creation Lab Layout** - Restructured to use grid layout for Steps 2 & 3
+- **Welcome Tab** - Updated documentation to reflect new layout
+- **Diagnostics Visibility** - No longer hidden by tall form sections
+
+### Fixed
+- **Diagnostics Scrolling** - Users no longer need to scroll to see console output
+
+---
+
+## [1.6.0] - 2026-02-14 (Drop 3.6)
+
+### 🎉 Major Feature Release - "Creation Lab"
+
+### Added
+
+#### Creation Lab (New Tab 5)
+- **Local Repository Creation** - Create professional repo structure locally
+- **README Templates** - Three built-in templates:
+  - **Basic** - Name, description, installation, usage, contributing, license
+  - **Detailed** - Adds table of contents, features, tests sections
+  - **Minimal** - Name, description, usage only
+- **LICENSE Templates** - Four popular open-source licenses:
+  - MIT License
+  - GPL-3.0 (GNU General Public License)
+  - Apache-2.0
+  - BSD-3-Clause
+- **Git Integration** - Automatic `git init` and initial commit
+- **GitHub Publishing** - Direct publish to GitHub with privacy selection
+- **Template Previews** - View README/LICENSE content before creation
+- **Placeholder Replacement** - Auto-fills repo name, description, year, author
+
+#### New Functions
+- **`create_github_repository()`** - Create repository via GitHub API
+- **Template Constants** - `README_TEMPLATES` and `LICENSE_TEMPLATES` dictionaries
+
+#### UI Components
+- **CreationLabTab Class** - Complete tab implementation with:
+  - Repository details form (name, description, location)
+  - README template selector with preview
+  - LICENSE template selector with preview
+  - Git initialization checkbox
+  - GitHub publishing options (private/public)
+  - Two action buttons (Create Local, Publish to GitHub)
+
+### Changed
+- **Tab Count** - Application now has 6 tabs (0-5)
+- **Welcome Tab** - Updated with Creation Lab documentation
+- **Main Window** - Added Tab 5 to notebook control
+
+---
+
+## [1.5.0] - 2026-02-13 (Drop 3.5)
+
+### Added
+- **Unified Right Panel** - Now visible and consistent across ALL tabs (0-4)
+- **Rate Limit Widget** - Moved to main right panel (visible everywhere)
+
+### Changed
+- **Tab 4 Layout** - Removed duplicate rate limit widget
+- **Right Panel Visibility** - Always visible with same components on all tabs
+- **Action Buttons** - Star button now accessible from all tabs
+
+### Removed
+- **Tab 4 Rate Limit Duplicate** - Replaced with unified widget in main right panel
+
+### Fixed
+- **Inconsistent Layout** - Tab 4 now matches other tabs' right panel design
+
+---
+
+## [1.4.0] - 2026-02-12 (Drop 3.4)
+
+### Fixed
+- **Initialization Order Bug** - Debug messages now appear after diagnostics widget creation
+- **Startup Crashes** - Fixed race condition during widget initialization
+
+### Changed
+- **Logging Order** - Moved initialization messages to after full UI setup
+- **Debug Output** - Improved startup diagnostic messages
+
+---
+
+## [1.3.0] - 2026-02-11 (Drop 3.3)
+
+### Added
+- **Grid Layout System** - Replaced pack layout with grid for better control
+- **Forced Right Panel Visibility** - Grid weights ensure panel is always visible
+- **Debug Logging** - Added console debug messages for panel creation
+
+### Changed
+- **Layout Engine** - Main UI now uses grid instead of pack
+- **Column Weights** - Explicit weight configuration for tabs (75%) and right panel (25%)
+- **Right Panel Width** - Fixed minimum width of 350px
+
+### Fixed
+- **Right Panel Disappearing** - Grid layout prevents panel from being hidden
+- **Inconsistent Sizing** - Explicit weights ensure proper space allocation
+
+---
+
+## [1.2.0] - 2026-02-10 (Drop 3.2)
+
+### Attempted
+- **Pack Layout Fix** - Attempted to fix right panel visibility using pack parameters
+
+### Changed
+- **Side Parameters** - Added explicit `side="left"` and `side="right"` to pack calls
+
+### Issues
+- Right panel visibility issue not fully resolved (fixed in Drop 3.3)
+
+---
+
+## [1.1.0] - 2026-02-09 (Drop 3.1)
+
+### Added
+- **Resizable Diagnostics Panel** - Using PanedWindow for main vertical split
+- **Drag Divider** - Users can adjust diagnostics console height
+- **Resize Hint** - Label indicating panel can be resized: "(drag divider above to resize ↕)"
+- **Diagnostics Header** - Separate header frame with title and hint
+
+### Changed
+- **Main Layout** - Switched from pack to PanedWindow for content/diagnostics split
+- **Diagnostics Size** - Now dynamically adjustable by user
+- **Initial Sizing** - Better default split (75% content, 25% diagnostics)
+
+### Fixed
+- **Diagnostics Too Small** - Users can now resize to preferred height
+- **Space Management** - More efficient use of vertical screen space
+
+---
+
+## [1.0.0] - 2026-02-08 (Drop 3.0)
+
+### 🎉 Major Feature Release - "Star Management"
+
+### Added
+
+#### Star Functionality
+- **`check_if_starred()` function** - Check if repository is starred
+- **`star_repository()` function** - Star a repository via GitHub API
+- **`unstar_repository()` function** - Unstar a repository via GitHub API
+- **Star Button** - Added to right panel action section
+- **Auto-Detect Star Status** - Button shows current state (starred/not starred)
+- **Star Toggle** - Single button to star or unstar based on current state
+
+#### Rate Limit Display
+- **RateLimitWidget Class** - Reusable rate limit display component
+- **Rate Limit Panel** - Added to Tab 4 right panel
+- **Visual Indicators**:
+  - Progress bar showing remaining requests
+  - Color coding (green > 500, orange 100-500, red < 100)
+  - Reset time display
+  - Manual refresh button
+
+### Changed
+- **Right Panel Layout** - Added "⭐ Actions" section with star button
+- **Tab 4 Layout** - Enhanced with rate limit display
+- **Selection Handler** - Now checks star status on repo selection
+
+### Fixed
+- None (new features only)
+
+---
+
+## [0.9.0] - 2026-02-07 (Drop 2.1)
+
+### Fixed
+- **Export Width Calculation Bug** - Fixed `_wrap_description()` width calculation
+  - Ensured width is always positive (minimum 20 characters)
+  - Prevented crash when window is very narrow
+
+### Added
+- **Tab 4 Export Support** - ExternalDownloadTab repos can now be exported
+- **`get_all_repos_for_export()` method** - Flattens tree structure to list for export
+
+### Changed
+- **Export Manager** - Enhanced to handle minimum width constraints
+- **Description Wrapping** - More robust with edge case handling
+
+---
+
+## [0.8.0] - 2026-02-06 (Drop 2.0)
+
+### 🎉 Major Feature Release - "Export & Enhanced Viewing"
+
+### Added
+
+#### Export Functionality
+- **ExportManager Class** - Handles CSV and TXT export
+- **CSV Export** - Structured format with columns:
+  - Repo name
+  - Owned/Cloned status
+  - Private/Public status
+  - Description
+- **TXT Export** - Formatted text with:
+  - Aligned columns
+  - Wrapped descriptions (80 chars with 2-space indent)
+  - Sorted by repository name
+  - Total count footer
+- **Export UI** - Radio buttons (CSV/TXT) and Export button in control bar
+- **Format Selection** - Persistent preference saved to config
+
+#### README Viewer (Tab 4)
+- **Center Panel README Display** - Large text area for README content
+- **Automatic README Fetch** - Loads when repository selected
+- **Base64 Decoding** - Properly decodes GitHub API README content
+- **Error Handling** - Graceful handling of missing READMEs
+
+#### Enhanced Repository Properties (Tab 4)
+- **Expanded Metadata Display**:
+  - Owned/Cloned status (fork detection)
+  - Privacy status (public/private)
+  - Statistics (stars, forks, watchers, issues)
+  - Technical details (language, branch, license)
+  - Timeline (created, updated, pushed dates)
+  - Repository URL
+
+### Changed
+- **Tab 4 Layout** - Now 3-panel: Tree | README | Properties+Assets
+- **Repository Display** - More comprehensive information shown
+- **Control Bar** - Added export controls
+
+---
+
+## [0.7.0] - 2026-02-05 (Drop 1.0)
+
+### 🎉 Initial Release
+
+### Added
+
+#### Core Application
+- **Main Window** - Tkinter-based GUI application
+- **6-Tab Interface**:
+  - Tab 0: Welcome (getting started guide)
+  - Tab 1: My Repos / Public Browse
+  - Tab 2: Organization Repos
+  - Tab 3: Starred Repos
+  - Tab 4: Download From Others
+  - Tab 5: (Reserved for future)
+
+#### Authentication
+- **Multi-Source Token Detection**:
+  - Flash drive (portable)
+  - Environment variable (CI/CD)
+  - Home directory file (persistent)
+- **Smart Public Browsing** - Works without token
+- **Configurable Default User** - Settings dialog for public browse user
+
+#### Repository Management
+- **RepoTable Widget** - Sortable table with columns:
+  - Name
+  - Private status
+  - Fork status
+  - Full name (owner/repo)
+  - URL
+- **Fetch User Repos** - Authenticated user's repositories
+- **Fetch Org Repos** - Organization repositories
+- **Fetch Starred Repos** - User's starred repositories
+- **Pagination Support** - Handles 100+ repos per list
+
+#### Download Features (Tab 4)
+- **Flexible Input** - Supports `owner/repo`, `owner/`, or `owner`
+- **Repository Tree** - Hierarchical view with releases
+- **Release Assets** - Download binaries and attachments
+- **Source Download** - ZIP archive of repository source
+- **Git Clone** - One-click shallow clone (depth=1)
+- **Multiple Repos** - Comma-separated input support
+
+#### Search & Filter
+- **Real-time Search** - Filter by repository name
+- **Advanced Filters**:
+  - All repositories
+  - Public only
+  - Private only
+  - Forks only
+  - Owned only
+- **Column Sorting** - Click headers to sort any column
+
+#### UI Features
+- **Status Bar** - Shows git, auth, token, network, mode status
+- **Control Bar** - Refresh, Create Repo, Search, Filter controls
+- **Right Panel** - Repository details and action buttons
+- **Diagnostics Console** - Timestamped log of all operations
+- **Action Buttons**:
+  - Open in Browser
+  - Clone Selected
+  - Download ZIP
+
+#### Configuration
+- **ConfigManager Class** - JSON-based persistence
+- **Window Geometry** - Remembers size and position
+- **Last Active Tab** - Restores previous tab on startup
+- **Settings Dialog** - Configure default public browse user
+
+#### Developer Features
+- **Modular Architecture** - Separated concerns (auth, download, export, GUI)
+- **Type Hints** - Full type annotation throughout
+- **Docstrings** - Comprehensive documentation
+- **Error Handling** - Graceful degradation on failures
+- **Thread Safety** - Async operations for long-running tasks
+
+---
+
+## Version Numbering
+
+**Format:** MAJOR.MINOR.PATCH
+
+- **MAJOR** - Incompatible API changes or major rewrites
+- **MINOR** - New features, backward compatible
+- **PATCH** - Bug fixes, backward compatible
+
+**Drop Notation:**
+- "Drop X.Y" refers to development iterations
+- Drops were consolidated into version numbers for release
+
+**Mapping:**
+- Drop 3.8 → v2.0.0 (Safety checks = major feature)
+- Drop 3.7 → v1.7.0 (Space-efficient layout)
+- Drop 3.6 → v1.6.0 (Creation Lab)
+- Drop 3.5 → v1.5.0 (Unified layout)
+- Drop 3.4 → v1.4.0 (Bug fix)
+- Drop 3.3 → v1.3.0 (Grid layout)
+- Drop 3.0 → v1.0.0 (Star functionality)
+- Drop 2.1 → v0.9.0 (Export fixes)
+- Drop 2.0 → v0.8.0 (Export & README viewer)
+- Drop 1.0 → v0.7.0 (Initial release)
+
+---
+
+## Upgrade Guide
+
+### From v1.x to v2.0.0
+
+**Breaking Changes:** None
+
+**New Features:**
+- Safety checks before publishing (automatic)
+- Enhanced warning dialogs (shown when needed)
+- Copyright notice in About dialog
+
+**Action Required:** None - update and run
+
+**Config Migration:** Automatic (no changes needed)
+
+**Testing Recommended:**
+1. Create new local repo in Creation Lab
+2. Try publishing to existing repo name
+3. Verify safety dialog appears
+4. Test all three options (Cancel, Add Remote, View)
+
+---
+
+### From v0.x to v1.x
+
+**Breaking Changes:** None
+
+**New Features:**
+- Creation Lab (Tab 5)
+- Star/Unstar functionality
+- Export to CSV/TXT
+- README viewer
+- Resizable diagnostics
+
+**Action Required:** None - update and run
+
+**Config Migration:** New keys added automatically:
+- `export_format` (default: "txt")
+
+---
+
+## Migration Notes
+
+### Configuration File Changes
+
+**v2.0.0:**
+- No new config keys
+
+**v1.6.0:**
+- No new config keys
+
+**v1.0.0:**
+- No new config keys
+
+**v0.8.0:**
+- Added `export_format` (default: "txt")
+
+**v0.7.0:**
+- Initial config file structure
+
+---
+
+## Known Issues
+
+### v2.0.0
+- None reported
+
+### v1.7.0
+- None reported
+
+### v1.6.0
+- ~~Right panel sometimes not visible on startup~~ (Fixed in v1.3.0)
+
+---
+
+## Upcoming Features
+
+See [DEVELOPER.md](DEVELOPER.md) for complete roadmap.
+
+**v2.1.0 - Enhanced Search** (Q1 2026)
+- Fuzzy search
+- Search by language
+- Date range filters
+- Saved search queries
+
+**v2.2.0 - Collaboration Tools** (Q2 2026)
+- Pull request management
+- Issue tracking
+- Team management
+- Contributor statistics
+
+**v2.3.0 - Advanced Analytics** (Q3 2026)
+- Commit frequency graphs
+- Language distribution charts
+- Star growth tracking
+- Export analytics reports
+
+**v3.0.0 - Major Rewrite** (Q4 2026)
+- Plugin system
+- Custom themes
+- Database caching
+- Multi-account support
+
+---
+
+## Deprecation Notices
+
+### v2.0.0
+- None
+
+### Future Deprecations
+- None planned
+
+---
+
+## Security Updates
+
+### v2.0.0
+- **Enhanced Safety** - Prevents accidental repository overwrites
+- **User Confirmation** - Explicit choice required for repo conflicts
+
+### v1.0.0
+- **Token Masking** - Tokens displayed as `ghp_***abc`
+- **File Permissions** - Token files checked for 600 permissions
+
+### v0.7.0
+- **Token Security** - Never logged or transmitted except to GitHub API
+- **HTTPS Only** - All GitHub API calls use HTTPS
+
+---
+
+## Contributors
+
+**v2.0.0:**
+- kindle15 - Safety checks, copyright, documentation
+
+**v1.7.0:**
+- kindle15 - Space-efficient layout
+
+**v1.6.0:**
+- kindle15 - Creation Lab, templates, publishing
+
+**v1.0.0:**
+- kindle15 - Star functionality, rate limit display
+
+**v0.8.0:**
+- kindle15 - Export system, README viewer, enhanced properties
+
+**v0.7.0:**
+- kindle15 - Initial release, core functionality
+
+---
+
+## Acknowledgments
+
+**Libraries & Tools:**
+- Python Software Foundation
+- Tkinter (Tcl/Tk)
+- GitHub REST API
+
+**Inspiration:**
+- GitHub Desktop
+- GitKraken
+- SourceTree
+
+**Community:**
+- GitHub for excellent API documentation
+- Python community for best practices
+- Stack Overflow for troubleshooting resources
+
+---
+
+## Links
+
+- **Repository:** https://github.com/kindle15/githubtool
+- **Issues:** https://github.com/kindle15/githubtool/issues
+- **Releases:** https://github.com/kindle15/githubtool/releases
+- **Documentation:** https://github.com/kindle15/githubtool/wiki
+
+---
+
+## License
+
+(c) kindle15 / 2026 - All rights reserved
+
+See [LICENSE](LICENSE) for details.
+
+---
+
+**Last Updated:** 2026-02-16  
+**Current Version:** 2.0.0  
+**Status:** Stable Release

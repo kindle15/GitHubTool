@@ -1,0 +1,2361 @@
+# GithubTool v2.0.0 - Developer Documentation
+
+**Version:** 2.0.0  
+**Release Date:** February 2026  
+**Author:** kindle15  
+**License:** (c) kindle15 / 2026
+
+---
+
+## 📑 Table of Contents
+
+1. [Overview](#overview)
+2. [Architecture](#architecture)
+3. [Installation & Setup](#installation--setup)
+4. [Module Documentation](#module-documentation)
+5. [API Reference](#api-reference)
+6. [Drop History](#drop-history)
+7. [Contributing Guidelines](#contributing-guidelines)
+8. [Troubleshooting](#troubleshooting)
+
+---
+
+## 🎯 Overview
+
+### What is GithubTool?
+
+GithubTool is a comprehensive desktop application for managing GitHub repositories. Built with Python and Tkinter, it provides an intuitive GUI for repository operations that would typically require command-line tools or multiple web browser tabs.
+
+### Key Features
+
+- **🔒 Safety-First Design** - Prevents accidental data loss with pre-publish checks
+- **⚡ Creation Lab** - Create local repos with README/LICENSE templates and publish to GitHub
+- **📊 Smart Public Browsing** - Browse public repos without authentication
+- **⭐ Star Management** - Star/unstar repositories directly from the UI
+- **📤 Export Tools** - Export repo lists to CSV/TXT with formatting
+- **📥 Download Tools** - Download repos, releases, and assets
+- **🔍 Search & Filter** - Find repos quickly with advanced filtering
+- **📐 Space-Efficient Layout** - Optimized UI with resizable diagnostics panel
+
+### Technology Stack
+
+- **Language:** Python 3.7+
+- **GUI Framework:** Tkinter (ttk widgets)
+- **HTTP Library:** urllib (built-in)
+- **Version Control:** Git (external dependency)
+- **Configuration:** JSON file storage
+
+---
+
+## 🏗️ Architecture
+
+### High-Level Architecture
+┌─────────────────────────────────────────────────────────┐ │ Main Application │ │ (App Class) │ ├─────────────────────────────────────────────────────────┤ │ │ │ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ │ │ │ Tab Control │ │ Right Panel │ │ Diagnostics │ │ │ │ (Notebook) │ │ (Rate Limit, │ │ Console │ │ │ │ │ │ Details, │ │ (Resizable) │ │ │ │ - Welcome │ │ Actions) │ │ │ │ │ │ - My Repos │ └──────────────┘ └──────────────┘ │ │ │ - Org Repos │ │ │ │ - Starred │ ┌──────────────────────────────┐ │ │ │ - Download │ │ GitHub API Client Layer │ │ │ │ - Creation │ │ (HTTP + JSON + Auth) │ │ │ └──────────────┘ └──────────────────────────────┘ │ │ │ └─────────────────────────────────────────────────────────┘ │ │ │ ▼ ▼ ▼ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ │ auth_token.py│ │download_core │ │ csv_core.py │ │ (Token Mgmt) │ │ (Repo Fetch) │ │ (Export) │ └──────────────┘ └──────────────┘ └──────────────┘
+
+Code
+
+### Module Breakdown
+
+#### **Core Modules**
+
+| Module | Purpose | Dependencies |
+|--------|---------|-------------|
+| `gui_3.py` | Main application, UI, orchestration | tkinter, auth_token, download_core, csv_core |
+| `auth_token.py` | Token detection (flash drive, env, file) | os, pathlib |
+| `download_core.py` | Fetch repos from GitHub API | urllib, json |
+| `csv_core.py` | Export repositories to CSV/TXT | csv, textwrap |
+
+#### **Optional Modules**
+
+| Module | Purpose | Required? |
+|--------|---------|-----------|
+| `repo_create_core.py` | Create repos via API | No (graceful fallback) |
+| `network_utils.py` | Network connectivity check | No (fallback to socket) |
+
+---
+
+## 🔧 Installation & Setup
+
+### Prerequisites
+
+```bash
+# Required
+Python 3.7+
+Git 2.0+
+Tkinter (usually included with Python)
+
+# Optional
+GitHub Personal Access Token (for authenticated features)
+Installation Steps
+1. Clone Repository
+bash
+git clone https://github.com/kindle15/githubtool.git
+cd githubtool
+2. Verify Dependencies
+bash
+python3 --version  # Should be 3.7+
+git --version      # Should be 2.0+
+python3 -m tkinter # Should open a test window
+3. Configure Token (Optional)
+Option A: Flash Drive
+
+bash
+# Create token file on flash drive
+echo "ghp_your_token_here" > /path/to/flashdrive/.github_token
+Option B: Environment Variable
+
+bash
+export GITHUB_TOKEN="ghp_your_token_here"
+Option C: Home Directory
+
+bash
+echo "ghp_your_token_here" > ~/.github_token
+chmod 600 ~/.github_token
+4. Run Application
+bash
+python3 gui_3.py
+📚 Module Documentation
+ConfigManager Class
+File: gui_3.py
+Purpose: Manages application configuration persistence
+
+Methods
+__init__(config_file: str = CONFIG_FILE)
+Initialize configuration manager.
+
+Parameters:
+
+config_file (str): Path to JSON config file (default: ght_config.json)
+Returns: ConfigManager instance
+
+Example:
+
+Python
+cfg = ConfigManager()
+get(key: str, default: Any = None) -> Any
+Retrieve configuration value.
+
+Parameters:
+
+key (str): Configuration key
+default (Any): Default value if key not found
+Returns: Configuration value or default
+
+Example:
+
+Python
+username = cfg.get("default_public_user", "kindle15")
+set(key: str, value: Any) -> None
+Set configuration value and save to disk.
+
+Parameters:
+
+key (str): Configuration key
+value (Any): Value to store
+Side Effects: Writes to config file
+
+Example:
+
+Python
+cfg.set("default_public_user", "octocat")
+ExportManager Class
+File: gui_3.py
+Purpose: Export repository data to CSV/TXT formats
+
+Static Methods
+export_to_csv(repos: List[Dict], filepath: str) -> None
+Export repositories to CSV format.
+
+Parameters:
+
+repos (List[Dict]): List of repository dictionaries
+filepath (str): Output file path
+Output Format:
+
+CSV
+Repo,Owned/Cloned,Private/Public,Description
+kindle15/repo1,Owned,Public,A cool project
+kindle15/repo2,Cloned,Private,Forked from elsewhere
+Example:
+
+Python
+ExportManager.export_to_csv(repos, "my_repos.csv")
+export_to_txt(repos: List[Dict], filepath: str) -> None
+Export repositories to formatted TXT.
+
+Parameters:
+
+repos (List[Dict]): List of repository dictionaries
+filepath (str): Output file path
+Output Format:
+
+Code
+Repo Name            | Owned/Cloned | Private/Public | Description
+-----------------------------------------------------------------
+kindle15/repo1       | Owned        | Public         | A cool project
+kindle15/repo2       | Cloned       | Private        | Forked from
+                     |              |                |   elsewhere
+
+Total repositories: 2
+Features:
+
+Column alignment
+Description wrapping (80 chars with 2-space indent)
+Sorted by repository name
+Example:
+
+Python
+ExportManager.export_to_txt(repos, "my_repos.txt")
+RepoTable Widget
+File: gui_3.py
+Purpose: Treeview-based table for displaying repository lists
+
+Methods
+populate(repos: List[Dict]) -> None
+Populate table with repository data.
+
+Parameters:
+
+repos (List[Dict]): List of repository dictionaries from GitHub API
+Expected Dictionary Keys:
+
+name (str): Repository name
+private (bool): Privacy status
+fork (bool): Fork status
+full_name (str): Owner/repo format
+html_url (str): GitHub URL
+id (int): Unique identifier
+Example:
+
+Python
+repos = [
+    {
+        "name": "my-repo",
+        "private": False,
+        "fork": False,
+        "full_name": "kindle15/my-repo",
+        "html_url": "https://github.com/kindle15/my-repo",
+        "id": 123456
+    }
+]
+table.populate(repos)
+selected_items() -> List[List[Any]]
+Get currently selected items.
+
+Returns: List of selected row values
+
+Example:
+
+Python
+selected = table.selected_items()
+# [["my-repo", "No", "No", "kindle15/my-repo", "https://..."]]
+clear() -> None
+Clear all items from table.
+
+Example:
+
+Python
+table.clear()
+RateLimitWidget Class
+File: gui_3.py
+Purpose: Display GitHub API rate limit information
+
+Added in: Drop 3 (v1.3.0)
+
+Methods
+refresh() -> None
+Fetch and display current rate limit from GitHub API.
+
+API Endpoint: https://api.github.com/rate_limit
+
+Display Format:
+
+Code
+GitHub API Rate Limit
+━━━━━━━━━━━━━━━━━━━━━━
+4,850 / 5,000 requests remaining
+████████████████░░░░ 97%
+Used: 150 | Resets at: 14:23:45
+Color Coding:
+
+Green: > 500 remaining
+Orange: 100-500 remaining
+Red: < 100 remaining
+Example:
+
+Python
+rate_widget.refresh()
+CreationLabTab Class
+File: gui_3.py
+Purpose: Create local repos with templates and publish to GitHub
+
+Added in: Drop 3.6 (v1.6.0)
+Enhanced in: Drop 3.7 (space-efficient layout)
+Enhanced in: Drop 3.8 / v2.0.0 (safety checks)
+
+Key Features
+README Templates
+
+Basic (name, description, installation, usage, contributing, license)
+Detailed (+ table of contents, features, tests)
+Minimal (name, description, usage only)
+LICENSE Templates
+
+MIT
+GPL-3.0
+Apache-2.0
+BSD-3-Clause
+Safety Checks
+
+Verifies local folder doesn't exist
+Checks if GitHub repo already exists
+Shows detailed warning if repo exists
+Offers safe options (cancel, add remote only, view on GitHub)
+Methods
+create_local_repo() -> None
+Create local repository with selected options.
+
+Process:
+
+Validate repo name (required)
+Check if folder exists (abort if yes)
+Create folder
+Generate README.md (if enabled)
+Generate LICENSE (if enabled)
+Initialize Git (if enabled)
+Create initial commit
+Enable "Publish to GitHub" button
+Example Flow:
+
+Python
+# User fills form:
+# - Name: "my-awesome-project"
+# - Description: "A cool new tool"
+# - Location: /home/user/projects
+# - README: Yes (Basic template)
+# - LICENSE: Yes (MIT)
+# - Git Init: Yes
+
+# Result:
+# /home/user/projects/my-awesome-project/
+#   ├── README.md (with placeholders filled)
+#   ├── LICENSE (MIT with current year)
+#   └── .git/ (initialized)
+publish_to_github() -> None
+Publish local repository to GitHub with safety checks.
+
+Process:
+
+Verify local repo exists
+Get GitHub token
+NEW IN v2.0.0: Check if repo exists on GitHub
+If exists: Show warning dialog with options
+If not exists: Create repo on GitHub
+Add remote origin
+Push to GitHub
+Open in browser
+Safety Dialog Options:
+
+Cancel (Safest): Abort publishing
+Add as Remote Only: Link to existing repo without creating new one
+View on GitHub: Open existing repo in browser to inspect
+Example:
+
+Python
+# Scenario: Repo already exists on GitHub
+# Result: Shows dialog:
+#
+# ⚠️ Repository Already Exists on GitHub!
+#
+# Repository: kindle15/my-awesome-project
+# Status: Already exists with content
+# Last updated: 2026-02-15
+# Last pushed: 2026-02-14
+# Size: 245 KB
+# Default branch: main
+#
+# URL: https://github.com/kindle15/my-awesome-project
+#
+# [Cancel] [Add as Remote Only] [View on GitHub]
+🔌 API Reference
+GitHub API Functions
+check_if_repo_exists(owner: str, repo_name: str, token: str)
+Added in: v2.0.0
+
+Check if a repository exists on GitHub.
+
+Parameters:
+
+owner (str): Repository owner (username)
+repo_name (str): Repository name
+token (str): GitHub API token
+Returns: Tuple[bool, Optional[Dict]]
+
+(True, repo_data) if repo exists
+(False, None) if repo doesn't exist
+Raises:
+
+urllib.error.HTTPError: If API call fails (other than 404)
+API Endpoint: GET https://api.github.com/repos/{owner}/{repo_name}
+
+Example:
+
+Python
+exists, repo_data = check_if_repo_exists("kindle15", "my-repo", token)
+if exists:
+    print(f"Repo exists! Last updated: {repo_data['updated_at']}")
+else:
+    print("Repo doesn't exist - safe to create!")
+get_authenticated_user(token: str)
+Added in: v2.0.0
+
+Get the authenticated user's username.
+
+Parameters:
+
+token (str): GitHub API token
+Returns: str - Username of authenticated user
+
+Raises:
+
+urllib.error.HTTPError: If API call fails
+API Endpoint: GET https://api.github.com/user
+
+Example:
+
+Python
+username = get_authenticated_user(token)
+print(f"Logged in as: {username}")
+create_github_repository(name: str, description: str, private: bool, token: str)
+Added in: v1.6.0
+
+Create a new repository on GitHub.
+
+Parameters:
+
+name (str): Repository name
+description (str): Repository description
+private (bool): Whether repo should be private
+token (str): GitHub API token
+Returns: Dict - Repository data from GitHub API
+
+Raises:
+
+urllib.error.HTTPError: If creation fails (e.g., name already exists)
+API Endpoint: POST https://api.github.com/user/repos
+
+Example:
+
+Python
+repo_data = create_github_repository(
+    name="my-new-repo",
+    description="A cool project",
+    private=True,
+    token=token
+)
+print(f"Created: {repo_data['html_url']}")
+check_if_starred(owner: str, repo: str, token: str)
+Added in: v1.3.0
+
+Check if a repository is starred by the authenticated user.
+
+Parameters:
+
+owner (str): Repository owner
+repo (str): Repository name
+token (str): GitHub API token
+Returns: bool - True if starred, False otherwise
+
+API Endpoint: GET https://api.github.com/user/starred/{owner}/{repo}
+
+HTTP Status:
+
+204: Repo is starred
+404: Repo is not starred
+Example:
+
+Python
+if check_if_starred("octocat", "Hello-World", token):
+    print("⭐ You've starred this repo!")
+else:
+    print("☆ Not starred yet")
+star_repository(owner: str, repo: str, token: str)
+Added in: v1.3.0
+
+Star a repository on GitHub.
+
+Parameters:
+
+owner (str): Repository owner
+repo (str): Repository name
+token (str): GitHub API token
+Returns: bool - True if successful
+
+API Endpoint: PUT https://api.github.com/user/starred/{owner}/{repo}
+
+Example:
+
+Python
+if star_repository("octocat", "Hello-World", token):
+    print("⭐ Starred successfully!")
+unstar_repository(owner: str, repo: str, token: str)
+Added in: v1.3.0
+
+Unstar a repository on GitHub.
+
+Parameters:
+
+owner (str): Repository owner
+repo (str): Repository name
+token (str): GitHub API token
+Returns: bool - True if successful
+
+API Endpoint: DELETE https://api.github.com/user/starred/{owner}/{repo}
+
+Example:
+
+Python
+if unstar_repository("octocat", "Hello-World", token):
+    print("☆ Unstarred successfully!")
+📜 Configuration Format
+Configuration File: ght_config.json
+Location: Current working directory
+
+Format:
+
+JSON
+{
+  "default_public_user": "kindle15",
+  "last_tab": 0,
+  "window_geometry": "1200x700",
+  "export_format": "txt"
+}
+Keys:
+
+Key	Type	Default	Description
+default_public_user	string	"kindle15"	Username for public browsing (no token)
+last_tab	integer	0	Last active tab index (0-5)
+window_geometry	string	"1200x700"	Window size (WIDTHxHEIGHT)
+export_format	string	"txt"	Default export format ("csv" or "txt")
+Auto-Generated: Created on first run if missing
+
+Auto-Saved: Updated on window close
+
+## 📜 Drop History
+
+### Version 2.0.0 - Major Release (Current)
+
+**Release Date:** February 2026  
+**Codename:** "Safety First"
+
+#### Major Features
+- 🛡️ **Safety Checks:** Prevents accidental repo overwrites on GitHub
+- ⚠️ **Warning Dialogs:** Shows detailed repo info before publishing
+- 🔒 **Safe Options:** Cancel, Add Remote Only, View on GitHub
+- © **Copyright Notice:** Added to About dialog
+
+#### Changes
+- Added `check_if_repo_exists()` function
+- Added `get_authenticated_user()` function
+- Enhanced `publish_to_github()` with safety checks
+- Added custom warning dialog with repo statistics
+- Updated About dialog with copyright
+- Updated Welcome tab with safety features info
+- Enhanced diagnostics logging for safety checks
+
+#### Bug Fixes
+- None (new features only)
+
+---
+
+### Drop 3.7 - Space-Efficient Layout
+
+**Release Date:** February 2026  
+**Focus:** UI optimization
+
+#### Changes
+- Moved Steps 2 & 3 side-by-side in Creation Lab
+- Reduced vertical space usage by ~30%
+- Improved diagnostics console visibility
+- Updated Welcome tab documentation
+
+#### Bug Fixes
+- None
+
+---
+
+### Drop 3.6 - Creation Lab
+
+**Release Date:** February 2026  
+**Focus:** Repository creation workflow
+
+#### Major Features
+- ⚡ **Creation Lab Tab:** New Tab 5 for repo creation
+- 📝 **README Templates:** Basic, Detailed, Minimal
+- 📄 **LICENSE Templates:** MIT, GPL-3.0, Apache-2.0, BSD-3-Clause
+- 🔧 **Git Integration:** Initialize repos with git init
+- 🚀 **GitHub Publishing:** Push to GitHub from GUI
+
+#### Changes
+- Added `CreationLabTab` class
+- Added `README_TEMPLATES` dictionary
+- Added `LICENSE_TEMPLATES` dictionary
+- Added `create_github_repository()` function
+- Added Tab 5 to main app
+- Enhanced toolbar with 6 tabs
+
+#### Bug Fixes
+- None
+
+---
+
+### Drop 3.5 - Unified Layout
+
+**Release Date:** February 2026  
+**Focus:** Consistency across tabs
+
+#### Changes
+- Unified right panel across ALL tabs (0-5)
+- Removed duplicate rate limit from Tab 4
+- Moved rate limit to main right panel
+- Star button now visible on all tabs
+- Consistent action buttons across tabs
+
+#### Bug Fixes
+- Fixed Tab 4 having different layout than other tabs
+
+---
+
+### Drop 3.4 - Initialization Fix
+
+**Release Date:** February 2026  
+**Focus:** Bug fixes
+
+#### Changes
+- Fixed initialization order bug
+- Moved debug messages after diagnostics widget creation
+- Improved startup logging
+
+#### Bug Fixes
+- Fixed crash when diagnostics widget not yet created
+
+---
+
+### Drop 3.3 - Grid Layout
+
+**Release Date:** February 2026  
+**Focus:** Force right panel visibility
+
+#### Changes
+- Changed from pack to grid layout
+- Forced right panel visibility with grid weights
+- Added debug logging for panel creation
+- Explicit column width configuration
+
+#### Bug Fixes
+- Fixed right panel disappearing on some systems
+
+---
+
+### Drop 3.2 - Pack Layout Attempt
+
+**Release Date:** February 2026  
+**Focus:** Layout fix attempt
+
+#### Changes
+- Attempted pack layout fix
+- Added explicit side parameters
+
+#### Bug Fixes
+- Attempted to fix right panel visibility (unsuccessful)
+
+---
+
+### Drop 3.1 - Resizable Diagnostics
+
+**Release Date:** February 2026  
+**Focus:** Improved diagnostics panel
+
+#### Major Features
+- 📏 **Resizable Diagnostics:** Drag divider to resize
+- ⬆️ **More Space:** Diagnostics no longer squished
+
+#### Changes
+- Changed to PanedWindow for main vertical split
+- Added drag hint label
+- Improved diagnostics header
+
+#### Bug Fixes
+- Fixed diagnostics panel being too small
+
+---
+
+### Drop 3.0 - Star Functionality
+
+**Release Date:** February 2026  
+**Focus:** Star management
+
+#### Major Features
+- ⭐ **Star/Unstar Repos:** Directly from GUI
+- 📊 **Rate Limit Display:** In Tab 4 right panel
+- 🔄 **Auto-Detect Star Status:** Shows current state
+
+#### Changes
+- Added `check_if_starred()` function
+- Added `star_repository()` function
+- Added `unstar_repository()` function
+- Added `RateLimitWidget` class
+- Added star button to action panel
+- Enhanced right panel with rate limit
+
+#### Bug Fixes
+- None
+
+---
+
+### Drop 2.1 - Export Fix
+
+**Release Date:** February 2026  
+**Focus:** Bug fixes
+
+#### Changes
+- Fixed export width calculation bug
+- Added Tab 4 export support
+- Improved description wrapping
+
+#### Bug Fixes
+- Fixed negative width in `_wrap_description()`
+- Fixed Tab 4 repos not exportable
+
+---
+
+### Drop 2.0 - Export & README Viewer
+
+**Release Date:** February 2026  
+**Focus:** Data export and viewing
+
+#### Major Features
+- 📤 **CSV/TXT Export:** Export repo lists with formatting
+- 📖 **README Viewer:** View README files in Tab 4
+- 📊 **Enhanced Properties:** More metadata in Tab 4
+- 🏷️ **Owned/Cloned Detection:** Shows fork status
+
+#### Changes
+- Added `ExportManager` class
+- Added `export_to_csv()` method
+- Added `export_to_txt()` method
+- Enhanced Tab 4 with README viewer
+- Added owned/cloned status to exports
+- Enhanced repo properties display
+
+#### Bug Fixes
+- None
+
+---
+
+### Drop 1.0 - Initial Release
+
+**Release Date:** February 2026  
+**Focus:** Core functionality
+
+#### Major Features
+- 🏠 **Welcome Tab:** Getting started guide
+- 🔍 **Smart Public Browsing:** No token required
+- ⚙️ **Settings System:** Configurable default user
+- 📋 **Repository Tables:** My Repos, Org Repos, Starred
+- 🔎 **Search & Filter:** Find repos quickly
+- 📊 **Status Bar:** Git, network, auth status
+- 🌐 **Action Buttons:** Open, clone, download ZIP
+
+#### Changes
+- Initial application structure
+- Created `ConfigManager` class
+- Created `RepoTable` widget
+- Created `WelcomeTab`
+- Created `ExternalDownloadTab`
+- Implemented token detection
+- Implemented repo fetching
+- Implemented search/filter
+- Implemented action buttons
+
+#### Bug Fixes
+- None (initial release)
+
+---
+
+## 🛠️ Contributing Guidelines
+
+### Code Style
+
+#### Python Style Guide
+
+Follow **PEP 8** with these specifics:
+
+**Indentation:**
+```python
+# Use 4 spaces (not tabs)
+def my_function():
+    if condition:
+        do_something()
+Naming Conventions:
+
+Python
+# Classes: PascalCase
+class ConfigManager:
+    pass
+
+# Functions/Methods: snake_case
+def get_token() -> Tuple[str, str]:
+    pass
+
+# Constants: UPPER_SNAKE_CASE
+DEFAULT_CONFIG = {}
+
+# Private: leading underscore
+def _internal_helper():
+    pass
+Type Hints:
+
+Python
+# Use type hints for all functions
+def fetch_repos(token: str) -> List[Dict]:
+    pass
+
+# Use Optional for nullable types
+def get_repo(name: str) -> Optional[Dict]:
+    pass
+
+# Use Tuple for multiple returns
+def check_status() -> Tuple[bool, str]:
+    pass
+Docstrings:
+
+Python
+def my_function(param1: str, param2: int) -> bool:
+    """
+    Brief description of function.
+    
+    Detailed description if needed.
+    Can span multiple lines.
+    
+    Args:
+        param1: Description of param1
+        param2: Description of param2
+    
+    Returns:
+        Description of return value
+    
+    Raises:
+        ValueError: When validation fails
+        
+    Example:
+        >>> my_function("test", 42)
+        True
+    """
+    pass
+Git Workflow
+Branch Strategy
+Code
+main (v2.0.0)
+  │
+  ├── develop (active development)
+  │     │
+  │     ├── feature/safety-checks (completed)
+  │     ├── feature/creation-lab (completed)
+  │     └── feature/new-feature (active)
+  │
+  └── hotfix/critical-bug (if needed)
+Branch Naming:
+
+feature/description - New features
+bugfix/description - Bug fixes
+hotfix/description - Critical production fixes
+refactor/description - Code improvements
+docs/description - Documentation updates
+Commit Messages
+Format:
+
+Code
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+Types:
+
+feat: New feature
+fix: Bug fix
+docs: Documentation
+style: Formatting, no code change
+refactor: Code restructuring
+test: Adding tests
+chore: Maintenance
+Examples:
+
+bash
+# Good commits:
+feat(creation-lab): add safety checks before publishing
+fix(export): correct width calculation in TXT export
+docs(readme): update installation instructions
+refactor(ui): consolidate right panel across tabs
+
+# Bad commits:
+update stuff
+fixed bug
+changes
+Detailed Example:
+
+Code
+feat(creation-lab): add safety checks before publishing
+
+- Check if repo exists on GitHub before creating
+- Show warning dialog with repo statistics
+- Offer safe options (cancel, add remote, view)
+- Prevents accidental data loss
+
+Closes #42
+Pull Request Process
+Create Feature Branch
+bash
+git checkout develop
+git pull origin develop
+git checkout -b feature/my-new-feature
+Make Changes
+bash
+# Make your changes
+git add .
+git commit -m "feat(scope): description"
+Push to Remote
+bash
+git push origin feature/my-new-feature
+Create Pull Request
+Title: Short description (50 chars max)
+Description: Detailed explanation
+Link related issues
+Add screenshots if UI changes
+Request review from maintainers
+PR Checklist
+Markdown
+- [ ] Code follows style guide
+- [ ] All tests pass
+- [ ] Documentation updated
+- [ ] No merge conflicts
+- [ ] Commit messages are clear
+- [ ] Screenshots added (if UI changes)
+After Approval
+bash
+# Maintainer will merge with squash
+# Delete feature branch after merge
+git checkout develop
+git pull origin develop
+git branch -d feature/my-new-feature
+Testing Guidelines
+Manual Testing Checklist
+Before Each Commit:
+
+ Application starts without errors
+ All tabs load correctly
+ No console errors in diagnostics
+ Token detection works (if applicable)
+ Feature works as expected
+Before Each Release:
+
+ Test with token (authenticated mode)
+ Test without token (public browse mode)
+ Test all tabs (0-5)
+ Test export (CSV and TXT)
+ Test star/unstar functionality
+ Test Creation Lab (all options)
+ Test safety checks (existing repo)
+ Test on Windows (if available)
+ Test on macOS (if available)
+ Test on Linux
+Test Scenarios
+Scenario 1: First-Time User (No Token)
+
+Code
+1. Launch application
+2. Expected: Tab 1 shows "Public Browse: kindle15"
+3. Verify: Can view public repos
+4. Verify: Star button is disabled
+5. Verify: Creation Lab publish is blocked
+Scenario 2: Authenticated User
+
+Code
+1. Set up token (flash drive, env, or file)
+2. Launch application
+3. Expected: Tab 1 shows "My Repos"
+4. Verify: Private repos visible
+5. Verify: Star button enabled
+6. Verify: Can publish to GitHub
+Scenario 3: Creation Lab - Local Only
+
+Code
+1. Go to Tab 5
+2. Enter repo name: "test-repo"
+3. Enable README (Basic template)
+4. Enable LICENSE (MIT)
+5. Enable Git Init
+6. Click "Create Local Repo"
+7. Verify: Folder created
+8. Verify: README.md exists with placeholders filled
+9. Verify: LICENSE exists with current year
+10. Verify: Git initialized
+Scenario 4: Creation Lab - Safety Check
+
+Code
+1. Create local repo: "existing-repo"
+2. Enable "Publish to GitHub"
+3. Click "Publish to GitHub"
+4. Expected: Check runs (if repo exists)
+5. Expected: Warning dialog appears (if exists)
+6. Verify: Dialog shows repo info
+7. Verify: Can cancel safely
+8. Verify: Can add as remote only
+9. Verify: Can view on GitHub
+Scenario 5: Export Functionality
+
+Code
+1. Go to Tab 1 (My Repos)
+2. Select export format (CSV or TXT)
+3. Click "Export View"
+4. Save to file
+5. Verify: File created
+6. Verify: Format correct
+7. Verify: All repos included
+8. Verify: No truncation errors
+Code Review Checklist
+For Reviewers:
+
+Functionality:
+
+ Feature works as described
+ No breaking changes to existing features
+ Error handling is comprehensive
+ Edge cases are handled
+Code Quality:
+
+ Code is readable and maintainable
+ No duplicate code (DRY principle)
+ Functions are single-purpose (SRP)
+ Naming is clear and consistent
+ Comments explain "why", not "what"
+Performance:
+
+ No unnecessary API calls
+ Async operations where appropriate
+ No blocking UI operations
+ Efficient data structures used
+Security:
+
+ Token is never logged or exposed
+ User input is validated
+ File paths are sanitized
+ No hardcoded credentials
+UI/UX:
+
+ UI is responsive
+ Error messages are helpful
+ Buttons are clearly labeled
+ Consistent with existing design
+Documentation Requirements
+For New Features:
+
+ Update DEVELOPER.md with API docs
+ Update README.md with usage instructions
+ Update CHANGELOG.md with changes
+ Add docstrings to all functions
+ Include usage examples
+ Document configuration options
+For Bug Fixes:
+
+ Document the bug in commit message
+ Explain the fix in PR description
+ Update relevant docs if behavior changed
+Module Structure Template
+When adding a new module, follow this structure:
+
+Python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+module_name.py - Brief description
+
+Version: 2.0.0
+Author: kindle15
+License: (c) kindle15 / 2026
+
+Detailed description of module purpose.
+"""
+
+# ============================================================================
+# IMPORTS
+# ============================================================================
+from __future__ import annotations
+import os
+from typing import List, Dict, Optional, Tuple
+
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+DEFAULT_VALUE = "value"
+MAX_RETRIES = 3
+
+# ============================================================================
+# MAIN CLASS/FUNCTIONS
+# ============================================================================
+class MyClass:
+    """Brief class description.
+    
+    Detailed description.
+    
+    Attributes:
+        attr1: Description of attr1
+        attr2: Description of attr2
+    
+    Example:
+        >>> obj = MyClass()
+        >>> obj.method()
+    """
+    
+    def __init__(self):
+        """Initialize MyClass."""
+        self.attr1 = None
+        self.attr2 = None
+    
+    def public_method(self, param: str) -> bool:
+        """
+        Brief method description.
+        
+        Args:
+            param: Parameter description
+        
+        Returns:
+            Return value description
+        
+        Raises:
+            ValueError: When validation fails
+        """
+        return True
+    
+    def _private_method(self) -> None:
+        """Private helper method."""
+        pass
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+def helper_function(arg: str) -> Optional[str]:
+    """
+    Brief function description.
+    
+    Args:
+        arg: Argument description
+    
+    Returns:
+        Return value description or None
+    """
+    pass
+
+# ============================================================================
+# MAIN ENTRY POINT (if applicable)
+# ============================================================================
+def main():
+    """Main entry point."""
+    pass
+
+if __name__ == "__main__":
+    main()
+🐛 Troubleshooting
+Common Issues
+Issue 1: "Token not found" on startup
+Symptoms:
+
+App shows "Not Authenticated"
+Tab 1 shows "Public Browse: kindle15"
+Star button disabled
+Causes:
+
+Token file not found
+Token file has wrong permissions
+Environment variable not set
+Flash drive not mounted
+Solutions:
+
+Check token file:
+
+bash
+# Check if file exists
+ls -la ~/.github_token
+
+# Check permissions (should be 600)
+chmod 600 ~/.github_token
+
+# Verify contents (should start with ghp_)
+cat ~/.github_token
+Check environment variable:
+
+bash
+# Linux/macOS
+echo $GITHUB_TOKEN
+
+# Windows
+echo %GITHUB_TOKEN%
+Check flash drive:
+
+bash
+# Linux
+mount | grep /media
+
+# macOS
+ls -la /Volumes/
+
+# Windows
+dir D:\ (or appropriate drive letter)
+Verify token is valid:
+
+bash
+curl -H "Authorization: token YOUR_TOKEN" https://api.github.com/user
+Issue 2: "Repository already exists" when publishing
+Symptoms:
+
+Error dialog when clicking "Publish to GitHub"
+Message: "Repository creation failed"
+Causes:
+
+Repository with same name already exists on GitHub
+Previous creation attempt succeeded but push failed
+Solutions:
+
+Option A: Rename local repo
+
+bash
+cd /path/to/parent
+mv old-name new-name
+# Update repo name in GUI and try again
+Option B: Delete GitHub repo
+
+bash
+# Via GitHub website:
+# 1. Go to repo settings
+# 2. Scroll to "Danger Zone"
+# 3. Click "Delete this repository"
+
+# Via API:
+curl -X DELETE -H "Authorization: token YOUR_TOKEN" \
+  https://api.github.com/repos/USERNAME/REPO_NAME
+Option C: Use "Add as Remote Only"
+
+Code
+# In GUI warning dialog:
+1. Click "Add as Remote Only"
+2. Manually merge/push:
+   cd /path/to/repo
+   git fetch origin
+   git merge origin/main
+   git push origin main
+Issue 3: Diagnostics panel too small
+Symptoms:
+
+Can't see diagnostics messages
+Panel is squished at bottom
+Causes:
+
+Window too small
+Panel divider dragged too high
+Solutions:
+
+Resize window:
+
+Maximize window or increase size
+Minimum recommended: 1200x700
+Drag divider:
+
+Hover over divider between main area and diagnostics
+Cursor should change to resize cursor
+Click and drag down to expand diagnostics
+Reset window size:
+
+bash
+# Delete config file to reset
+rm ght_config.json
+# Restart application
+Issue 4: Git not found
+Symptoms:
+
+"Git Status: Not Installed or Not in PATH"
+Clone/Init operations fail
+Causes:
+
+Git not installed
+Git not in system PATH
+Solutions:
+
+Install Git:
+
+bash
+# Ubuntu/Debian
+sudo apt install git
+
+# macOS (via Homebrew)
+brew install git
+
+# Windows
+# Download from: https://git-scm.com/download/win
+Add to PATH:
+
+bash
+# Linux/macOS - add to ~/.bashrc or ~/.zshrc
+export PATH="/usr/local/git/bin:$PATH"
+
+# Windows
+# System Properties > Environment Variables > Path
+# Add: C:\Program Files\Git\bin
+Verify installation:
+
+bash
+git --version
+# Should show: git version 2.x.x
+Issue 5: Network connectivity errors
+Symptoms:
+
+"Network Status: Offline or Unreachable"
+API calls fail with timeout
+Causes:
+
+No internet connection
+Firewall blocking GitHub API
+GitHub is down (rare)
+Solutions:
+
+Check internet:
+
+bash
+ping 8.8.8.8
+Check GitHub status:
+
+bash
+curl https://www.githubstatus.com/api/v2/status.json
+Check firewall:
+
+bash
+# Allow https://api.github.com
+# Port 443 (HTTPS)
+Use proxy (if required):
+
+bash
+export HTTPS_PROXY=http://proxy.company.com:8080
+Issue 6: Rate limit exceeded
+Symptoms:
+
+"Rate limit exceeded" errors
+API calls fail with 403 status
+Rate limit widget shows 0/60 or 0/5000
+Causes:
+
+Too many API requests
+No token (limited to 60/hour)
+Token provided (limited to 5000/hour)
+Solutions:
+
+Wait for reset:
+
+Check rate limit widget for reset time
+Wait until specified time
+Use token:
+
+bash
+# Without token: 60 requests/hour
+# With token: 5000 requests/hour
+# Set up token using installation instructions
+Reduce API calls:
+
+Don't repeatedly refresh tabs
+Use search/filter instead of re-fetching
+Cache results when possible
+Issue 7: Unicode errors in export
+Symptoms:
+
+Export fails with UnicodeEncodeError
+Repo descriptions with emojis cause crashes
+Causes:
+
+Non-ASCII characters in repo descriptions
+System encoding not UTF-8
+Solutions:
+
+Fix encoding:
+
+bash
+# Linux/macOS - add to ~/.bashrc
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# Verify
+python3 -c "import sys; print(sys.getdefaultencoding())"
+# Should show: utf-8
+Already fixed in code:
+
+Python
+# All file operations use explicit UTF-8
+with open(filepath, 'w', encoding='utf-8') as f:
+    ...
+Issue 8: Window not saving size/position
+Symptoms:
+
+Window resets to default size on restart
+Last tab not remembered
+Causes:
+
+Config file not writable
+Exception during shutdown
+Solutions:
+
+Check config file:
+
+bash
+# Should exist and be writable
+ls -la ght_config.json
+chmod 644 ght_config.json
+Manual edit:
+
+JSON
+{
+  "window_geometry": "1400x800",
+  "last_tab": 2
+}
+Debug config saving:
+
+Python
+# Add to on_closing() method:
+print(f"Saving config: {self.geometry()}")
+
+## 🚀 Advanced Topics
+
+### Custom Token Sources
+
+You can extend token detection by modifying `auth_token.py`:
+
+```python
+def get_token() -> Tuple[Optional[str], str]:
+    """
+    Detect GitHub token from multiple sources.
+    
+    Priority order:
+    1. Flash drive
+    2. Environment variable
+    3. Home directory file
+    4. CUSTOM: Add your source here
+    """
+    
+    # Existing sources...
+    
+    # CUSTOM: Add cloud storage check
+    cloud_token = _check_cloud_storage()
+    if cloud_token:
+        return cloud_token, "cloud storage"
+    
+    return None, "not found"
+
+def _check_cloud_storage() -> Optional[str]:
+    """Check cloud storage for token file."""
+    cloud_paths = [
+        "~/Dropbox/.github_token",
+        "~/Google Drive/.github_token",
+        "~/OneDrive/.github_token"
+    ]
+    
+    for path in cloud_paths:
+        expanded = os.path.expanduser(path)
+        if os.path.exists(expanded):
+            try:
+                with open(expanded, 'r') as f:
+                    return f.read().strip()
+            except Exception:
+                pass
+    
+    return None
+Custom README Templates
+Add your own templates to README_TEMPLATES:
+
+Python
+README_TEMPLATES = {
+    "Basic": "...",
+    "Detailed": "...",
+    "Minimal": "...",
+    
+    # CUSTOM: Add your template
+    "Company": """# {REPO_NAME}
+
+{DESCRIPTION}
+
+## 🏢 Company Information
+**Department:** Engineering
+**Team:** Platform
+**Contact:** platform-team@company.com
+
+## 📋 Requirements
+- Python 3.8+
+- Docker
+- Kubernetes
+
+## 🚀 Quick Start
+\`\`\`bash
+make install
+make test
+make deploy
+\`\`\`
+
+## 📖 Documentation
+See [internal wiki](https://wiki.company.com/project/{REPO_NAME})
+
+## 🔒 Security
+Report security issues to: security@company.com
+
+## 📄 License
+Proprietary - © Company 2026
+"""
+}
+Custom LICENSE Templates
+Add custom licenses:
+
+Python
+LICENSE_TEMPLATES = {
+    "MIT": "...",
+    "GPL-3.0": "...",
+    
+    # CUSTOM: Add your license
+    "Proprietary": """PROPRIETARY LICENSE
+
+Copyright (c) {YEAR} {AUTHOR}
+
+All rights reserved.
+
+This software and associated documentation files (the "Software")
+are the proprietary property of {AUTHOR}.
+
+Unauthorized copying, distribution, modification, or use of this
+Software, via any medium, is strictly prohibited without the
+express written permission of {AUTHOR}.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+
+Contact: legal@company.com
+""",
+    
+    "Custom-BSD": """Custom BSD License
+
+Copyright (c) {YEAR}, {AUTHOR}
+All rights reserved.
+
+[Your custom BSD modifications here]
+"""
+}
+Extending Export Formats
+Add new export formats:
+
+Python
+class ExportManager:
+    
+    # Existing methods...
+    
+    @staticmethod
+    def export_to_json(repos: List[Dict], filepath: str) -> None:
+        """
+        Export repositories to JSON format.
+        
+        Added by: Custom extension
+        """
+        import json
+        
+        output = {
+            "exported_at": datetime.now().isoformat(),
+            "total_repos": len(repos),
+            "repositories": []
+        }
+        
+        for repo in sorted(repos, key=lambda r: r.get("full_name", "").lower()):
+            output["repositories"].append({
+                "name": repo.get("name"),
+                "full_name": repo.get("full_name"),
+                "description": repo.get("description"),
+                "private": repo.get("private", False),
+                "fork": repo.get("fork", False),
+                "stars": repo.get("stargazers_count", 0),
+                "language": repo.get("language"),
+                "url": repo.get("html_url")
+            })
+        
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(output, f, indent=2, ensure_ascii=False)
+    
+    @staticmethod
+    def export_to_markdown(repos: List[Dict], filepath: str) -> None:
+        """
+        Export repositories to Markdown format.
+        
+        Added by: Custom extension
+        """
+        lines = ["# My GitHub Repositories", ""]
+        
+        for repo in sorted(repos, key=lambda r: r.get("full_name", "").lower()):
+            name = repo.get("full_name", "Unknown")
+            desc = repo.get("description", "No description")
+            url = repo.get("html_url", "")
+            stars = repo.get("stargazers_count", 0)
+            lang = repo.get("language", "Unknown")
+            
+            lines.append(f"## [{name}]({url})")
+            lines.append(f"> {desc}")
+            lines.append(f"- **Language:** {lang}")
+            lines.append(f"- **Stars:** ⭐ {stars}")
+            lines.append("")
+        
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write("\n".join(lines))
+Then update the GUI to support these formats:
+
+Python
+# In export_current_view() method:
+fmt = self.export_format_var.get()
+
+if fmt == "csv":
+    ExportManager.export_to_csv(data, out)
+elif fmt == "txt":
+    ExportManager.export_to_txt(data, out)
+elif fmt == "json":
+    ExportManager.export_to_json(data, out)
+elif fmt == "markdown":
+    ExportManager.export_to_markdown(data, out)
+Custom Themes
+Add theme support (requires ttk styling):
+
+Python
+class ThemeManager:
+    """Manage application themes."""
+    
+    THEMES = {
+        "light": {
+            "bg": "#ffffff",
+            "fg": "#000000",
+            "select_bg": "#0078d7",
+            "select_fg": "#ffffff"
+        },
+        "dark": {
+            "bg": "#1e1e1e",
+            "fg": "#ffffff",
+            "select_bg": "#0e639c",
+            "select_fg": "#ffffff"
+        },
+        "github": {
+            "bg": "#0d1117",
+            "fg": "#c9d1d9",
+            "select_bg": "#1f6feb",
+            "select_fg": "#ffffff"
+        }
+    }
+    
+    @classmethod
+    def apply_theme(cls, root: tk.Tk, theme_name: str) -> None:
+        """Apply theme to application."""
+        theme = cls.THEMES.get(theme_name, cls.THEMES["light"])
+        
+        style = ttk.Style(root)
+        
+        # Configure ttk widgets
+        style.configure(".", 
+                       background=theme["bg"],
+                       foreground=theme["fg"])
+        
+        style.configure("Treeview",
+                       background=theme["bg"],
+                       foreground=theme["fg"],
+                       fieldbackground=theme["bg"])
+        
+        style.map("Treeview",
+                 background=[("selected", theme["select_bg"])],
+                 foreground=[("selected", theme["select_fg"])])
+        
+        # Configure tk widgets
+        root.configure(bg=theme["bg"])
+
+# Usage in App.__init__():
+ThemeManager.apply_theme(self, "dark")
+Plugin System
+Create a basic plugin architecture:
+
+Python
+# plugins/base_plugin.py
+class BasePlugin:
+    """Base class for all plugins."""
+    
+    def __init__(self, app):
+        self.app = app
+    
+    def on_startup(self):
+        """Called when app starts."""
+        pass
+    
+    def on_repo_selected(self, repo: Dict):
+        """Called when repo is selected."""
+        pass
+    
+    def add_menu_items(self, menubar: tk.Menu):
+        """Add items to menu bar."""
+        pass
+
+# plugins/stats_plugin.py
+class StatsPlugin(BasePlugin):
+    """Plugin to show repository statistics."""
+    
+    def add_menu_items(self, menubar: tk.Menu):
+        stats_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Statistics", menu=stats_menu)
+        stats_menu.add_command(label="Show Stats", command=self.show_stats)
+    
+    def show_stats(self):
+        """Show repository statistics."""
+        repos = self.app.repos_my + self.app.repos_orgs + self.app.repos_starred
+        
+        total = len(repos)
+        private = sum(1 for r in repos if r.get("private"))
+        forks = sum(1 for r in repos if r.get("fork"))
+        total_stars = sum(r.get("stargazers_count", 0) for r in repos)
+        
+        stats_text = f"""Repository Statistics
+
+Total Repositories: {total}
+Private: {private}
+Public: {total - private}
+Forks: {forks}
+Original: {total - forks}
+Total Stars: {total_stars:,}
+"""
+        messagebox.showinfo("Statistics", stats_text)
+
+# In App.__init__():
+class App(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        
+        # ... existing code ...
+        
+        # Load plugins
+        self.plugins = []
+        self._load_plugins()
+    
+    def _load_plugins(self):
+        """Load all plugins."""
+        try:
+            from plugins.stats_plugin import StatsPlugin
+            plugin = StatsPlugin(self)
+            plugin.on_startup()
+            plugin.add_menu_items(self.menubar)
+            self.plugins.append(plugin)
+        except ImportError:
+            pass  # Plugin not available
+Database Integration
+Add SQLite caching for offline access:
+
+Python
+import sqlite3
+from datetime import datetime, timedelta
+
+class RepoCache:
+    """Cache repository data in SQLite."""
+    
+    def __init__(self, db_path: str = "repo_cache.db"):
+        self.db_path = db_path
+        self._init_db()
+    
+    def _init_db(self):
+        """Initialize database schema."""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS repos (
+                id INTEGER PRIMARY KEY,
+                full_name TEXT UNIQUE,
+                name TEXT,
+                description TEXT,
+                private INTEGER,
+                fork INTEGER,
+                stars INTEGER,
+                language TEXT,
+                html_url TEXT,
+                cached_at TEXT
+            )
+        """)
+        
+        conn.commit()
+        conn.close()
+    
+    def cache_repos(self, repos: List[Dict]):
+        """Cache repository list."""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        now = datetime.now().isoformat()
+        
+        for repo in repos:
+            cursor.execute("""
+                INSERT OR REPLACE INTO repos 
+                (id, full_name, name, description, private, fork, stars, language, html_url, cached_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                repo.get("id"),
+                repo.get("full_name"),
+                repo.get("name"),
+                repo.get("description"),
+                int(repo.get("private", False)),
+                int(repo.get("fork", False)),
+                repo.get("stargazers_count", 0),
+                repo.get("language"),
+                repo.get("html_url"),
+                now
+            ))
+        
+        conn.commit()
+        conn.close()
+    
+    def get_cached_repos(self, max_age_hours: int = 24) -> List[Dict]:
+        """Get cached repositories (if not too old)."""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        cutoff = (datetime.now() - timedelta(hours=max_age_hours)).isoformat()
+        
+        cursor.execute("""
+            SELECT id, full_name, name, description, private, fork, stars, language, html_url
+            FROM repos
+            WHERE cached_at > ?
+        """, (cutoff,))
+        
+        repos = []
+        for row in cursor.fetchall():
+            repos.append({
+                "id": row[0],
+                "full_name": row[1],
+                "name": row[2],
+                "description": row[3],
+                "private": bool(row[4]),
+                "fork": bool(row[5]),
+                "stargazers_count": row[6],
+                "language": row[7],
+                "html_url": row[8]
+            })
+        
+        conn.close()
+        return repos
+
+# Usage in reload_status():
+def reload_status(self) -> None:
+    cache = RepoCache()
+    
+    # Try cache first
+    cached = cache.get_cached_repos(max_age_hours=1)
+    if cached:
+        self.repos_my = cached
+        self.table_my.populate(cached)
+        self._append_diag(f"Loaded {len(cached)} repos from cache")
+    
+    # Then fetch fresh data
+    try:
+        repos = fetch_user_repos(token)
+        cache.cache_repos(repos)  # Update cache
+        self.repos_my = repos
+        self.table_my.populate(repos)
+    except Exception as e:
+        if not cached:  # Only error if no cache available
+            self._append_diag(f"Fetch failed: {e}")
+Automated Testing
+Add unit tests:
+
+Python
+# tests/test_export_manager.py
+import unittest
+import tempfile
+import os
+from gui_3 import ExportManager
+
+class TestExportManager(unittest.TestCase):
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        self.repos = [
+            {
+                "name": "test-repo",
+                "full_name": "user/test-repo",
+                "description": "Test repository",
+                "private": False,
+                "fork": False
+            },
+            {
+                "name": "another-repo",
+                "full_name": "user/another-repo",
+                "description": "Another test",
+                "private": True,
+                "fork": True
+            }
+        ]
+    
+    def test_export_to_csv(self):
+        """Test CSV export."""
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv') as f:
+            filepath = f.name
+        
+        try:
+            ExportManager.export_to_csv(self.repos, filepath)
+            
+            # Verify file exists
+            self.assertTrue(os.path.exists(filepath))
+            
+            # Verify content
+            with open(filepath, 'r') as f:
+                content = f.read()
+                self.assertIn("user/test-repo", content)
+                self.assertIn("Test repository", content)
+        finally:
+            os.unlink(filepath)
+    
+    def test_export_to_txt(self):
+        """Test TXT export."""
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as f:
+            filepath = f.name
+        
+        try:
+            ExportManager.export_to_txt(self.repos, filepath)
+            
+            # Verify file exists
+            self.assertTrue(os.path.exists(filepath))
+            
+            # Verify content
+            with open(filepath, 'r') as f:
+                content = f.read()
+                self.assertIn("Repo Name", content)  # Header
+                self.assertIn("user/test-repo", content)
+                self.assertIn("Total repositories: 2", content)  # Footer
+        finally:
+            os.unlink(filepath)
+    
+    def test_wrap_description(self):
+        """Test description wrapping."""
+        long_desc = "A" * 100
+        wrapped = ExportManager._wrap_description(long_desc, width=50)
+        
+        lines = wrapped.split('\n')
+        
+        # Verify wrapping
+        self.assertGreater(len(lines), 1)
+        
+        # Verify continuation indent
+        for line in lines[1:]:
+            self.assertTrue(line.startswith("  "))
+
+if __name__ == '__main__':
+    unittest.main()
+Run tests:
+
+bash
+python -m unittest discover tests/
+📊 Performance Optimization
+Caching Strategies
+Problem: Repeated API calls for same data
+
+Solution: Implement intelligent caching
+
+Python
+class CachedGitHubAPI:
+    """GitHub API client with caching."""
+    
+    def __init__(self, token: str, cache_duration: int = 300):
+        self.token = token
+        self.cache_duration = cache_duration  # seconds
+        self.cache: Dict[str, Tuple[Any, float]] = {}
+    
+    def get(self, url: str) -> Any:
+        """Get data with caching."""
+        now = time.time()
+        
+        # Check cache
+        if url in self.cache:
+            data, timestamp = self.cache[url]
+            if now - timestamp < self.cache_duration:
+                return data
+        
+        # Fetch fresh data
+        data, _ = _http_get_json(url, self.token)
+        self.cache[url] = (data, now)
+        
+        return data
+    
+    def invalidate(self, url: str = None):
+        """Invalidate cache."""
+        if url:
+            self.cache.pop(url, None)
+        else:
+            self.cache.clear()
+Async Operations
+Problem: UI freezes during long operations
+
+Solution: Already implemented with threading
+
+Best Practices:
+
+Python
+def long_operation_async(self):
+    """Always use async wrapper for long operations."""
+    threading.Thread(target=self.long_operation, daemon=True).start()
+
+def long_operation(self):
+    """Actual long-running operation."""
+    try:
+        # Do work
+        result = expensive_api_call()
+        
+        # Update UI on main thread
+        self.after(0, lambda: self.update_ui(result))
+    except Exception as e:
+        self.after(0, lambda: self.show_error(e))
+Pagination Optimization
+Problem: Fetching all pages is slow
+
+Solution: Lazy loading
+
+Python
+def fetch_repos_lazy(self, token: str, callback: Callable[[List[Dict]], None]):
+    """Fetch repos with lazy loading."""
+    
+    def fetch_thread():
+        page = 1
+        while True:
+            url = f"https://api.github.com/user/repos?per_page=100&page={page}"
+            data, hdrs = _http_get_json(url, token)
+            
+            if not isinstance(data, list) or not data:
+                break
+            
+            # Update UI immediately with this page
+            self.after(0, lambda d=data: callback(d))
+            
+            link = hdrs.get("Link", "")
+            if 'rel="next"' not in link:
+                break
+            
+            page += 1
+    
+    threading.Thread(target=fetch_thread, daemon=True).start()
+
+# Usage:
+def on_repos_loaded(self, repos: List[Dict]):
+    """Called for each page of results."""
+    existing = self.table_my.all_items()
+    self.repos_my.extend(repos)
+    self.table_my.populate(self.repos_my)
+    self._append_diag(f"Loaded {len(repos)} more repos (total: {len(self.repos_my)})")
+🔒 Security Best Practices
+Token Security
+DO:
+
+✅ Store tokens with restricted permissions (600)
+✅ Use environment variables for CI/CD
+✅ Mask tokens in logs (_mask_token())
+✅ Clear token from memory after use
+✅ Use separate tokens for different apps
+DON'T:
+
+❌ Commit tokens to git
+❌ Log full tokens
+❌ Store tokens in plaintext in shared locations
+❌ Use same token for production and development
+❌ Share tokens via email/chat
+Input Validation
+Always validate user input:
+
+Python
+def validate_repo_name(name: str) -> bool:
+    """Validate repository name."""
+    if not name:
+        return False
+    
+    # GitHub rules:
+    # - Max 100 characters
+    # - Alphanumeric, hyphen, underscore, period
+    # - Can't start with period or hyphen
+    
+    if len(name) > 100:
+        return False
+    
+    if name[0] in ('.', '-'):
+        return False
+    
+    import re
+    if not re.match(r'^[a-zA-Z0-9._-]+$', name):
+        return False
+    
+    return True
+
+# Usage:
+repo_name = self.name_entry.get().strip()
+if not validate_repo_name(repo_name):
+    messagebox.showerror("Invalid Name", 
+                        "Repository name must be:\n"
+                        "- 1-100 characters\n"
+                        "- Alphanumeric, hyphen, underscore, period\n"
+                        "- Can't start with period or hyphen")
+    return
+Path Sanitization
+Prevent path traversal attacks:
+
+Python
+def sanitize_path(base_dir: Path, user_path: str) -> Path:
+    """Sanitize user-provided path."""
+    # Resolve to absolute path
+    full_path = (base_dir / user_path).resolve()
+    
+    # Ensure it's within base_dir
+    try:
+        full_path.relative_to(base_dir)
+        return full_path
+    except ValueError:
+        raise ValueError(f"Path {user_path} is outside base directory")
+
+# Usage:
+base = Path.home() / "projects"
+user_input = self.location_var.get()
+try:
+    safe_path = sanitize_path(base, user_input)
+except ValueError as e:
+    messagebox.showerror("Invalid Path", str(e))
+    return
+❓ Frequently Asked Questions
+General Questions
+Q: Why Python/Tkinter instead of Electron or web app?
+
+A: Several reasons:
+
+Lightweight: No browser overhead
+Native: True desktop integration
+Simple: Pure Python, no Node.js/npm
+Portable: Single Python file
+Fast: No web server, direct API calls
+Secure: No web vulnerabilities (XSS, CSRF, etc.)
+Q: Can I use this with GitHub Enterprise?
+
+A: Yes! Modify the API base URL:
+
+Python
+# At top of gui_3.py, add constant:
+GITHUB_API_BASE = os.getenv("GITHUB_API_URL", "https://api.github.com")
+
+# Then in all API calls, use:
+url = f"{GITHUB_API_BASE}/user/repos"
+Set environment variable:
+
+bash
+export GITHUB_API_URL="https://github.company.com/api/v3"
+Q: Does this work on Windows/macOS/Linux?
+
+A: Yes! Tkinter is cross-platform. Tested on:
+
+✅ Linux (Ubuntu 20.04+)
+✅ macOS (11+)
+✅ Windows (10+)
+Minor differences:
+
+File paths (use pathlib.Path everywhere)
+Line endings (handled by Python automatically)
+Git path detection (works on all platforms)
+Q: Can I package this as a standalone executable?
+
+A: Yes! Use PyInstaller:
+
+bash
+pip install pyinstaller
+
+pyinstaller --onefile --windowed \
+    --name GithubTool \
+    --icon=icon.ico \
+    gui_3.py
+Distribute:
+
+Windows: dist/GithubTool.exe
+macOS: dist/GithubTool.app
+Linux: dist/GithubTool
+Q: How do I update to a new version?
+
+A:
+
+bash
+git fetch origin
+git checkout v2.0.0  # or latest tag
+# or
+git pull origin main
+Your config file (ght_config.json) is preserved.
+
+Technical Questions
+Q: Why not use the official GitHub Python library (PyGithub)?
+
+A: To minimize dependencies. The app uses only Python stdlib:
+
+tkinter (GUI)
+urllib (HTTP)
+json (parsing)
+subprocess (git operations)
+This makes installation simpler and reduces attack surface.
+
+Q: How are API rate limits handled?
+
+A:
+
+Rate limit is checked and displayed in right panel
+Each API call response includes rate limit headers
+App doesn't automatically throttle (user decides)
+Recommendation: Use token for 5000/hour vs 60/hour
+Q: Can I run multiple instances?
+
+A: Yes, but be aware:
+
+They share the same config file (ght_config.json)
+Last closed instance wins for config save
+Token detection is independent
+Consider separate working directories
+Q: How do I contribute?
+
+A: See Contributing Guidelines section above.
+
+Quick start:
+
+bash
+git clone https://github.com/kindle15/githubtool.git
+cd githubtool
+git checkout -b feature/my-feature
+# Make changes
+git commit -m "feat: description"
+git push origin feature/my-feature
+# Create Pull Request on GitHub
+Q: Where can I get help?
+
+A:
+
+Check this documentation
+Check Troubleshooting section
+Search existing GitHub issues
+Create new GitHub issue with:
+Error message
+Steps to reproduce
+Python version
+OS version
+Token source (don't include actual token!)
+Q: Is my token safe?
+
+A: Yes, if you follow best practices:
+
+Token is never logged in full (masked)
+Token is never sent anywhere except GitHub API
+Token is read-only from file/env
+No network communication except GitHub API
+Code is open source (audit yourself)
+However:
+
+❌ Don't use tokens with excessive permissions
+❌ Don't share your token file
+❌ Don't commit token to git
+✅ Use fine-grained tokens (recommended)
+✅ Set expiration dates
+✅ Revoke if compromised
+📄 License
+GithubTool v2.0.0
+
+(c) kindle15 / 2026
+
+All rights reserved.
+
+This software is proprietary. Contact kindle15 for licensing information.
+
+🤝 Acknowledgments
+Technologies:
+
+Python Software Foundation
+Tcl/Tk (Tkinter)
+GitHub REST API
+Inspiration:
+
+GitHub Desktop
+GitKraken
+SourceTree
+Community:
+
+GitHub for excellent API documentation
+Stack Overflow for troubleshooting help
+Python community for best practices
+📞 Contact
+Author: kindle15
+
+Project: GithubTool
+
+Version: 2.0.0
+
+Website: https://github.com/kindle15/githubtool
+
+Issues: https://github.com/kindle15/githubtool/issues
+
+Email: (contact via GitHub)
+
+📝 Changelog Summary
+Version	Date	Key Features
+v2.0.0	Feb 2026	Safety checks, prevent overwrites
+v1.7.0	Feb 2026	Space-efficient layout
+v1.6.0	Feb 2026	Creation Lab with templates
+v1.5.0	Feb 2026	Unified layout across tabs
+v1.4.0	Feb 2026	Grid layout fixes
+v1.3.0	Feb 2026	Star/unstar functionality
+v1.2.0	Feb 2026	Export to CSV/TXT
+v1.1.0	Feb 2026	Resizable diagnostics
+v1.0.0	Feb 2026	Initial release
+See CHANGELOG.md for detailed version history.
+
+🔮 Future Roadmap
+Planned Features:
+
+v2.1.0 - Enhanced Search
+
+ Fuzzy search
+ Search by language
+ Search by date range
+ Saved search queries
+v2.2.0 - Collaboration Tools
+
+ Team management
+ Permission viewer
+ Contributor statistics
+ Pull request management
+v2.3.0 - Advanced Analytics
+
+ Commit frequency graphs
+ Language distribution charts
+ Star growth over time
+ Export analytics reports
+v3.0.0 - Major Rewrite
+
+ Plugin system
+ Custom themes
+ Database caching
+ Multi-account support
+ Command palette
+ Keyboard shortcuts
+ Notification system
+Community Requests:
+
+ GitLab support
+ Bitbucket support
+ Diff viewer
+ Code search
+ Issue tracking
+ Actions/Workflows integration
+END OF DEVELOPER.MD
+
+This documentation is maintained as part of the GithubTool project.
+Last updated: February 2026
+Version: 2.0.0
